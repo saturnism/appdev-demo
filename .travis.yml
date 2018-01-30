@@ -11,3 +11,9 @@ before_script:
 - gcloud auth activate-service-account "travis-ci@appdev-demo.iam.gserviceaccount.com"
   --key-file=appdev-demo-7e87befc1137.json
 - gcloud config set project appdev-demo
+script:
+- mvn test -B
+- mvn appengine:deploy
+after_script:
+- appengine_version=$(grep -oPm1 "(?<=<version>)[^<]+" <<< cat springboot-appengine-standard/src/main/webapp/WEB-INF/appengine-web.xml)
+- gcloud app services set-traffic default --splits ${appengine_version}=1 --migrate --quiet --verbosity info
